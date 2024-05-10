@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>三目並べ</title>
+</head>
+<body>
+    <center>
+        <h1>三目並べ</h1>
+
+        <p>プレイヤー1(先攻)：○<br>プレイヤー2(後攻)：×</p>
+
+        <canvas id="myCanvas" width="300" height="300"></canvas>
+        
+        <br><br>
+
+        <button type="reset" onclick="resetBoard()">リセット</button>
+    </center>
+
+    <script>
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        const cellSize = 100;
+        ctx.lineWidth = 2;
+        for(let i = 0; i < 3; i++){  // 行
+            for (let j = 0; j < 3; j++){  // 列
+                const x = cellSize * j;
+                const y = cellSize * i;
+                ctx.strokeRect(x,y,cellSize,cellSize)
+            }
+        }
+
+        let currentPlayer = 1;
+
+        const board = [
+            [0,0,0],
+            [0,0,0],
+            [0,0,0]
+        ]
+
+        canvas.addEventListener("click",(event) =>{
+            const x = Math.floor(event.offsetX / cellSize);
+            const y = Math.floor(event.offsetY / cellSize);
+
+            if(board[y][x] === 0){
+                drawMark(x,y,currentPlayer);
+                board[y][x] = currentPlayer;
+                const winner = checkWinner();
+                if (winner !== 0){
+                    setTimeout(function(){
+                        alert("プレイヤー" + winner + "の勝利!");
+                        resetBoard();
+                    },200);
+                } else {
+                    currentPlayer = (currentPlayer === 1 ? 2 : 1);
+                }
+            }
+        })
+
+        function drawMark(x,y,player){
+            ctx.beginPath();
+            const centerX = x * cellSize + cellSize / 2;
+            const centerY = y * cellSize + cellSize / 2;
+            const radius = cellSize / 3;
+            if (player === 1){
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            } else if (player == 2) {
+                ctx.moveTo(centerX - radius, centerY - radius);
+                ctx.lineTo(centerX + radius, centerY + radius);
+                ctx.moveTo(centerX + radius, centerY - radius);
+                ctx.lineTo(centerX - radius, centerY + radius);
+            }
+            ctx.stroke();
+        }
+
+        function checkWinner(){
+            // 横の判定
+            for (let i = 0; i < 3; i++){
+                if (board[i][0] === board[i][1] && board[i][1] === board[i][2]){
+                    return board[i][0];
+                }
+            }
+
+            // 縦の判定
+            for (let j = 0; j < 3; j++){
+                if (board[0][j] === board[1][j] && board[1][j] === board[2][j]){
+                    return board[0][j];
+                }
+            }
+
+            // 斜めの判定
+            if ((board[0][0] === board[1][1] && board[1][1] === board[2][2]) ||
+                (board[0][2] === board[1][1] && board[1][1] === board[2][0])){
+                return board[1][1];
+            }
+
+            draw();
+
+            return 0; // 勝者なし
+        }
+
+        //引き分け判定
+        function draw(){
+            let a;
+            let b = 1;
+            for(let i = 0; i < 3; i++){  // 行
+                for (let j = 0; j < 3; j++){  // 列
+                        a = board[j][i];
+                        b = b * a;
+                }
+            }
+            if(b!=0){
+                setTimeout(function(){
+                    alert("引き分けです\nボードをリセットします");
+                    resetBoard();
+                },200);
+            }                
+        }
+
+        function resetBoard(){
+            for (let i = 0; i < 3; i++){
+                for (let j = 0; j < 3; j++){
+                    board[i][j] = 0;
+                }
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let i = 0; i < 3; i++){  // 行
+                for (let j = 0; j < 3; j++){  // 列
+                    const x = cellSize * j;
+                    const y = cellSize * i;
+                    ctx.strokeRect(x,y,cellSize,cellSize)
+                }
+            }
+            currentPlayer = 1;
+        }
+
+    </script>
+</body>
+</html>
